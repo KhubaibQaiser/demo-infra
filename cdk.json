@@ -1,4 +1,7 @@
 {
   "app": "npx tsx cdk/bin/demo.ts",
-  "context": { "@aws-cdk/core:checkSecretUsage": true }
+  "context": {
+    "@aws-cdk/core:checkSecretUsage": true,
+    "githubOidcProviderArn": "arn:aws:iam::515966520569:oidc-provider/token.actions.githubusercontent.com"
+  }
 }

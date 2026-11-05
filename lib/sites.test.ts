@@ -5,7 +5,11 @@ const base = (): SitesConfig => structuredClone(loadSites());
 
 describe("validateSites", () => {
   it("accepts the committed sites.json", () => expect(() => validateSites(base())).not.toThrow());
-  it("rejects the placeholder zone in strict mode", () => expect(() => validateSites(base(), true)).toThrow(/placeholder/));
+  it("rejects the placeholder zone in strict mode", () => {
+    const c = base();
+    c.zone.id = "Z0000000000000";
+    expect(() => validateSites(c, true)).toThrow(/placeholder/);
+  });
   it("rejects duplicate subdomains across frontend and api", () => {
     const c = base();
     c.sites[0].backend!.subdomain = c.sites[0].subdomain;
