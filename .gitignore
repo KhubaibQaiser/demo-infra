@@ -12,3 +12,6 @@ tofu/backend.hcl
 
 # scrubbed demo data stays local; import with scripts/import-demo-db.sh
 data/
+
+tofu-lock-test/backend.hcl
+tofu-lock-test/.terraform/
