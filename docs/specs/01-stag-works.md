@@ -75,13 +75,10 @@ No AWS, Sentry, Gusto, Microsoft, Sparkpost or Google Maps values are set.
   origin, `Allow-Credentials: true`, and a non-listed origin gets no ACAO header.
 - Run the test inside Docker (no local PHP): `docker run` a `composer:2` / `php:8.3-cli` container, or Lando.
 
-### 5. `.env.render.example` (new) and `docs/DEMO_RENDER.md` (new)
+### 5. `docs/DEMO_RENDER.md` (new)
 
-(Reference docs only; the real env is managed in `demo-infra`.)
-
-- `.env.render.example`: variable names only, no real values (matches the table above).
-- `docs/DEMO_RENDER.md`: what is deployed, how to redeploy, reset the DB, rotate the demo password,
-  and the known limits (cold start, ephemeral files, no PDFs/SSO/scheduler).
+What is deployed, redeploy, reset the DB, rotate the demo password, known limits. Env values are NOT mirrored in this repo
+(no `.env.render.example`): `demo-infra/sites.json` `backend.env` plus OpenTofu are the only source.
 
 ## Explicitly not changed
 

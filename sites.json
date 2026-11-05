@@ -42,7 +42,7 @@
           "MAIL_MAILER": "log",
           "BROADCAST_DRIVER": "log",
           "DEMO_LOCAL_STORAGE": "true",
-          "DEMO_AUTO_SEED": "true"
+          "DEMO_AUTO_SEED": "false"
         }
       }
     }
