@@ -1,0 +1,54 @@
+{
+  "apex": "khubaibqaiser.com",
+  "zone": {
+    "id": "Z0000000000000"
+  },
+  "sites": [
+    {
+      "name": "lumen",
+      "subdomain": "lumen",
+      "pages": {
+        "project": "lumen-demo",
+        "repo": "KhubaibQaiser/custom-crm",
+        "branch": "main",
+        "buildCommand": "npm run build",
+        "outputDir": "build",
+        "env": {
+          "NODE_VERSION": "22",
+          "HUSKY": "0",
+          "VITE_ENV": "demo"
+        }
+      },
+      "backend": {
+        "subdomain": "lumen-api",
+        "renderService": "lumen-demo-api-kq",
+        "healthPath": "/api/health/live",
+        "keepalive": true,
+        "repo": "KhubaibQaiser/stagworks-backend",
+        "branch": "demo/render",
+        "dockerfile": "./docker/render/Dockerfile",
+        "env": {
+          "APP_NAME": "Lumen API",
+          "APP_ENV": "staging",
+          "APP_DEBUG": "false",
+          "SESSION_DRIVER": "file",
+          "CACHE_DRIVER": "file",
+          "QUEUE_CONNECTION": "sync",
+          "SESSION_SECURE_COOKIE": "true",
+          "SESSION_SAME_SITE": "none",
+          "LOG_CHANNEL": "stderr",
+          "TELESCOPE_ENABLED": "false",
+          "DB_CONNECTION": "mysql",
+          "MAIL_MAILER": "log",
+          "BROADCAST_DRIVER": "log",
+          "DEMO_LOCAL_STORAGE": "true",
+          "DEMO_AUTO_SEED": "true"
+        }
+      }
+    }
+  ],
+  "keepalive": {
+    "intervalMinutes": 10,
+    "activeHoursUtc": "6-20"
+  }
+}

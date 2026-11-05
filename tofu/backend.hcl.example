@@ -1,0 +1,3 @@
+# Copy to backend.hcl (uncommitted) and fill in. Credentials are NOT here:
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY hold the R2 S3 key pair, set in your shell or GitHub secrets.
+endpoints = { s3 = "https://<CLOUDFLARE_ACCOUNT_ID>.r2.cloudflarestorage.com" }

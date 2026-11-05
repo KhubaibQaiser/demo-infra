@@ -1,0 +1,24 @@
+{
+  "name": "demo-infra",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "validate:sites": "tsx scripts/validate-sites.ts",
+    "gen:wrangler": "tsx keepalive/gen-wrangler.ts",
+    "synth": "cdk synth --quiet",
+    "check": "npm run typecheck && npm test && npm run validate:sites && npm run synth"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261104.1",
+    "@types/node": "22.19.0",
+    "aws-cdk": "2.1148.0",
+    "aws-cdk-lib": "2.275.0",
+    "constructs": "10.8.1",
+    "tsx": "4.23.15",
+    "typescript": "~5.9.0",
+    "vitest": "5.1.0",
+    "wrangler": "4.158.0"
+  }
+}

@@ -1,0 +1,58 @@
+name: plan
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run validate:sites
+      - run: npm run synth
+      - run: npm run gen:wrangler
+      - run: npx wrangler deploy --dry-run -c keepalive/wrangler.generated.jsonc
+      - uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+        with: { tofu_version: 1.12.5 }
+      - run: tofu -chdir=tofu fmt -check -recursive
+      - run: tofu -chdir=tofu init -backend=false -input=false && tofu -chdir=tofu validate
+
+  # Read-only plan against real state. Needs repo secrets; skipped when they are absent (e.g. before bootstrap).
+  tofu-plan:
+    needs: check
+    if: ${{ vars.CLOUDFLARE_ACCOUNT_ID != '' }}
+    runs-on: ubuntu-latest
+    environment: plan
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      AIVEN_TOKEN: ${{ secrets.AIVEN_TOKEN }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      TF_STATE_PASSPHRASE: ${{ secrets.TF_STATE_PASSPHRASE }}
+      TF_VAR_demo_password: ${{ secrets.DEMO_PASSWORD }}
+      TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_aiven_project: ${{ vars.AIVEN_PROJECT }}
+      TF_VAR_render_owner_id: ${{ vars.RENDER_OWNER_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+        with: { tofu_version: 1.12.5 }
+      - name: init + plan
+        run: |
+          . scripts/tf-env.sh
+          printf 'endpoints = { s3 = "https://%s.r2.cloudflarestorage.com" }\n' "${{ vars.CLOUDFLARE_ACCOUNT_ID }}" > tofu/backend.hcl
+          tofu -chdir=tofu init -input=false -backend-config=backend.hcl
+          tofu -chdir=tofu plan -input=false -lock-timeout=60s
