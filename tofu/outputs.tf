@@ -10,3 +10,16 @@ output "render_urls" {
 output "db_hosts" {
   value = { for k, d in aiven_mysql.db : k => d.service_host }
 }
+
+# Used by scripts/import-demo-db.sh only. Sensitive: never printed by CI.
+output "db_connection" {
+  sensitive = true
+  value = { for k, d in aiven_mysql.db : k => {
+    host     = d.service_host
+    port     = d.service_port
+    user     = d.service_username
+    password = d.service_password
+    database = "defaultdb"
+    ca_cert  = data.aiven_project.this.ca_cert
+  } }
+}

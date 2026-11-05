@@ -26,3 +26,8 @@ tofu -chdir=tofu init -backend=false && tofu -chdir=tofu validate
 
 ## Teardown
 `aiven_mysql` has `prevent_destroy`. To remove a site: delete its entry, remove `prevent_destroy` in a separate PR first.
+
+## Demo data
+The Laravel seeders need Google geocoding, so the demo database is loaded from a scrubbed copy of a local database instead
+(`data/demo.sql.gz`, gitignored; scrub rules in `scripts/scrub-demo-db.sql`; load with `scripts/import-demo-db.sh <site>`).
+Never commit an unscrubbed dump.

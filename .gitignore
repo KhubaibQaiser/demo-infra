@@ -9,3 +9,6 @@ keepalive/wrangler.generated.jsonc
 .wrangler/
 
 tofu/backend.hcl
+
+# scrubbed demo data stays local; import with scripts/import-demo-db.sh
+data/

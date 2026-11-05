@@ -32,6 +32,11 @@ Decided already: apex `khubaibqaiser.com`; hostnames `lumen` / `lumen-api`; stat
    **Variables**: `CLOUDFLARE_ACCOUNT_ID`, `AIVEN_PROJECT`, `RENDER_OWNER_ID`, `AWS_DEPLOY_ROLE_ARN` (from the `DemoCi` stack output), `DEMO_EMAIL`. The `plan` environment needs the same secrets read-only if you want PR plans.
 7. **Run the R2 lock test** (spec 03 Task 0) before the first apply.
 
+## B2. Load the demo data (once, after the first successful `tofu apply`)
+
+`. scripts/tf-env.sh && scripts/import-demo-db.sh lumen` (needs docker, jq, tofu state access; asks for nothing, prints no secrets).
+Then trigger a Render redeploy so the backend boots against the data. `data/demo.sql.gz` exists only on this machine.
+
 ## C. Shell-only secrets for the bootstrap
 
 `CLOUDFLARE_API_TOKEN`, `AIVEN_TOKEN`, `RENDER_API_KEY`, R2 key pair (`AWS_ACCESS_KEY_ID/SECRET_ACCESS_KEY`), `TF_STATE_PASSPHRASE` (≥16 chars), `TF_VAR_demo_password`

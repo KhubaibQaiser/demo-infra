@@ -116,6 +116,21 @@ into Render env vars. **No `render.yaml`, no Blueprint click, no `render-env.sh`
 `sites.json` under `backend.env`. Still to confirm at first apply: that the API accepts `plan = "free"`.
 Render must be able to read the private backend repo (GitHub app consent, manual).
 
+## Demo data (decision: anonymized copy of the local DB)
+
+The backend seeders need Google geocoding, so Render cannot seed itself (`DEMO_AUTO_SEED=false`). Instead:
+- `scripts/scrub-demo-db.sql` documents the scrub applied to a throwaway copy of the Lando database: all users/contacts/team
+  members/clients/domains/addresses/phones/brands/competitors/partners replaced with generic values; registrar credentials,
+  tokens, audits and emergency contacts removed; real password hashes locked; contract/price/salary amounts perturbed (0.6-1.4x).
+- The result is `data/demo.sql.gz` (about 0.5 MB; gitignored, local only). Verified by scanning the dump for staff names/domains
+  and for 8,400 original names/emails/titles/addresses: no verbatim leftovers except generic job titles and coincidental
+  name overlaps; public magazine/registrar websites remain by design.
+- `scripts/import-demo-db.sh <site>` loads it once into the empty Aiven database over TLS (refuses a non-empty DB). Run after the
+  first `tofu apply`, before the first successful backend boot, or just redeploy afterwards. The boot-time `demo:set-password` then
+  sets the one shared demo password. Login: `khubaib@test.com` (display name "Demo Admin").
+- Verified locally: import takes ~6 s; backend boots, `migrate` is a no-op, login works, `/api/v1/clients` and `/api/v1/contacts` return scrubbed data.
+- To refresh the data: re-copy Lando into a scratch MySQL, rerun the scrub SQL, re-dump, empty the Aiven DB, import again.
+
 ## Component: `keepalive/` — Worker
 
 - Module Worker, TypeScript, `scheduled()` handler only; `workers_dev = false` (no public URL).
