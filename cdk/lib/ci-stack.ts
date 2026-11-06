@@ -5,7 +5,8 @@ import { Construct } from "constructs";
 export interface DemoCiProps extends cdk.StackProps {
   /** ARN of the GitHub OIDC provider that already exists in the account (created by portfolio-v2). */
   githubOidcProviderArn: string;
-  repo: string; // "owner/name"
+  /** OIDC subject repo part. This repo uses immutable subjects: "owner@ownerId/name@repoId" (gh api repos/OWNER/NAME/actions/oidc/customization/sub). */
+  repo: string;
 }
 
 /** Role that GitHub Actions in this repo assumes (OIDC, no stored AWS keys). It may only assume CDK bootstrap roles. */

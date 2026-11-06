@@ -31,14 +31,14 @@ describe("DemoCiStack", () => {
   const t = Template.fromStack(new DemoCiStack(new cdk.App(), "C", {
     env: { account: "111111111111", region: "us-east-1" },
     githubOidcProviderArn: "arn:aws:iam::111111111111:oidc-provider/token.actions.githubusercontent.com",
-    repo: "KhubaibQaiser/demo-infra",
+    repo: "KhubaibQaiser@6773396/demo-infra@1447293722",
   }));
   it("trusts only main and the production environment", () => {
     t.hasResourceProperties("AWS::IAM::Role", {
       AssumeRolePolicyDocument: Match.objectLike({
         Statement: [Match.objectLike({ Condition: Match.objectLike({ StringLike: { "token.actions.githubusercontent.com:sub": [
-          "repo:KhubaibQaiser/demo-infra:ref:refs/heads/main",
-          "repo:KhubaibQaiser/demo-infra:environment:production",
+          "repo:KhubaibQaiser@6773396/demo-infra@1447293722:ref:refs/heads/main",
+          "repo:KhubaibQaiser@6773396/demo-infra@1447293722:environment:production",
         ] } }) })],
       }),
     });
