@@ -14,8 +14,8 @@ code() { curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$@"; }
 echo "1/4 API health";      retry bash -c "[ \"\$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 $API$HEALTH)\" = 200 ]"
 echo "2/4 frontend";        retry bash -c "[ \"\$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 $FRONT)\" = 200 ]"
 echo "3/4 CORS preflight"
-hdrs=$(curl -s -D - -o /dev/null -X OPTIONS "$API/auth/login" -H "Origin: $FRONT" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type,authorization")
-echo "$hdrs" | grep -qi "^access-control-allow-origin: $FRONT\r\?$" || { echo "CORS: ACAO != $FRONT"; exit 1; }
+hdrs=$(curl -s -D - -o /dev/null -X OPTIONS "$API/auth/login" -H "Origin: $FRONT" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type,authorization" | tr -d "\r")
+echo "$hdrs" | grep -qi "^access-control-allow-origin: $FRONT$" || { echo "CORS: ACAO != $FRONT"; exit 1; }
 echo "$hdrs" | grep -qi "^access-control-allow-credentials: true" || { echo "CORS: credentials header missing"; exit 1; }
 echo "4/4 login"
 : "${DEMO_EMAIL:?}" "${DEMO_PASSWORD:?}"
