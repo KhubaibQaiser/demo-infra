@@ -86,6 +86,31 @@ resource "random_bytes" "app_key" {
 
 # ---------- Render free web service: one per backend ----------
 
+locals {
+  api_env = { for k, each_value in local.backends : k => merge(
+    { for name, v in try(each_value.backend.env, {}) : name => { value = v } },
+    {
+      APP_URL                  = { value = "https://${each_value.backend.subdomain}.${local.apex}" }
+      FRONTEND_URL             = { value = "https://${each_value.subdomain}.${local.apex}" }
+      CORS_ALLOWED_ORIGINS     = { value = "https://${each_value.subdomain}.${local.apex}" }
+      SANCTUM_STATEFUL_DOMAINS = { value = "${each_value.subdomain}.${local.apex}" }
+      APP_KEY                  = { value = "base64:${random_bytes.app_key[k].base64}" }
+      DB_HOST                  = { value = aiven_mysql.db[k].service_host }
+      DB_PORT                  = { value = tostring(aiven_mysql.db[k].service_port) }
+      DB_DATABASE              = { value = "defaultdb" }
+      DB_USERNAME              = { value = aiven_mysql.db[k].service_username }
+      DB_PASSWORD              = { value = aiven_mysql.db[k].service_password }
+      DB_SSL_CA_PEM            = { value = data.aiven_project.this.ca_cert }
+      DEMO_PASSWORD            = { value = var.demo_password }
+    }
+  ) }
+}
+
+resource "terraform_data" "api_env" {
+  for_each = local.backends
+  input    = sha256(jsonencode(local.api_env[each.key]))
+}
+
 resource "render_web_service" "api" {
   for_each          = local.backends
   name              = each.value.backend.renderService
@@ -104,21 +129,12 @@ resource "render_web_service" "api" {
 
   custom_domains = [{ name = "${each.value.backend.subdomain}.${local.apex}" }]
 
-  env_vars = merge(
-    { for k, v in try(each.value.backend.env, {}) : k => { value = v } },
-    {
-      APP_URL                  = { value = "https://${each.value.backend.subdomain}.${local.apex}" }
-      FRONTEND_URL             = { value = "https://${each.value.subdomain}.${local.apex}" }
-      CORS_ALLOWED_ORIGINS     = { value = "https://${each.value.subdomain}.${local.apex}" }
-      SANCTUM_STATEFUL_DOMAINS = { value = "${each.value.subdomain}.${local.apex}" }
-      APP_KEY                  = { value = "base64:${random_bytes.app_key[each.key].base64}" }
-      DB_HOST                  = { value = aiven_mysql.db[each.key].service_host }
-      DB_PORT                  = { value = tostring(aiven_mysql.db[each.key].service_port) }
-      DB_DATABASE              = { value = "defaultdb" }
-      DB_USERNAME              = { value = aiven_mysql.db[each.key].service_username }
-      DB_PASSWORD              = { value = aiven_mysql.db[each.key].service_password }
-      DB_SSL_CA_PEM            = { value = data.aiven_project.this.ca_cert }
-      DEMO_PASSWORD            = { value = var.demo_password }
-    }
-  )
+  env_vars = local.api_env[each.key]
+
+  # The Render provider cannot update a free service in place (it sends maintenance mode, which free plans reject),
+  # so env changes recreate the service instead.
+  lifecycle {
+    ignore_changes       = [env_vars]
+    replace_triggered_by = [terraform_data.api_env[each.key]]
+  }
 }
