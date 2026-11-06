@@ -15,7 +15,7 @@ describe("DemoDnsStack", () => {
   it("creates frontend and api CNAMEs for a site with a backend", () => {
     const t = dns();
     t.resourceCountIs("AWS::Route53::RecordSet", 2);
-    t.hasResourceProperties("AWS::Route53::RecordSet", { Name: "lumen.khubaibqaiser.com.", Type: "CNAME", ResourceRecords: ["lumen-demo.pages.dev"], TTL: "300" });
+    t.hasResourceProperties("AWS::Route53::RecordSet", { Name: "lumen.khubaibqaiser.com.", Type: "CNAME", ResourceRecords: ["lumen-demo-kq.pages.dev"], TTL: "300" });
     t.hasResourceProperties("AWS::Route53::RecordSet", { Name: "lumen-api.khubaibqaiser.com.", Type: "CNAME", ResourceRecords: ["lumen-demo-api-kq.onrender.com"] });
   });
   it("creates only one record for a static site", () => {
