@@ -31,7 +31,7 @@ demo-infra/
       "name": "lumen",
       "subdomain": "lumen",
       "pages": {
-        "project": "lumen-demo",
+        "project": "lumen-demo-kq",
         "repo": "KhubaibQaiser/custom-crm",
         "branch": "main",
         "buildCommand": "npm run build",

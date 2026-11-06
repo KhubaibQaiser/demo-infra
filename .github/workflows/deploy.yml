@@ -50,6 +50,16 @@ jobs:
           printf 'endpoints = { s3 = "https://%s.r2.cloudflarestorage.com" }\n' "$CLOUDFLARE_ACCOUNT_ID" > tofu/backend.hcl
           tofu -chdir=tofu init -input=false -backend-config=backend.hcl
           tofu -chdir=tofu apply -input=false -auto-approve -lock-timeout=120s
+          # Cloudflare/Render add a suffix when a name is taken; DNS targets are built from the names in sites.json,
+          # so a suffix would point the CNAME at someone else's site. Fail instead.
+          bad=$(
+            { tofu -chdir=tofu output -json pages_urls | jq -r 'to_entries[] | "\(.key) \(.value)"' | sed 's|https://||' | awk '{print "pages", $1, $2}'
+              tofu -chdir=tofu output -json render_urls | jq -r 'to_entries[] | "\(.key) \(.value)"' | sed 's|https://||' | awk '{print "render", $1, $2}'; } |
+            while read -r kind site host; do
+              want=$(jq -r --arg s "$site" --arg k "$kind" '.sites[] | select(.name==$s) | if $k=="pages" then .pages.project + ".pages.dev" else .backend.renderService + ".onrender.com" end' sites.json)
+              [ "$host" = "$want" ] || echo "$kind $site: got $host, sites.json implies $want"
+            done)
+          [ -z "$bad" ] || { echo "$bad"; echo "A platform name was taken: pick a unique one in sites.json."; exit 1; }
 
       # 2) DNS (AWS via OIDC, no stored keys).
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
