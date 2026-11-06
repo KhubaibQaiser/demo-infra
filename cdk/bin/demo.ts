@@ -11,5 +11,5 @@ new DemoDnsStack(app, "DemoDns", loadSites(), { env });
 // Bootstrap-only stack: needs `-c githubOidcProviderArn=arn:aws:iam::<acct>:oidc-provider/token.actions.githubusercontent.com`
 const oidc = app.node.tryGetContext("githubOidcProviderArn");
 if (oidc) {
-  new DemoCiStack(app, "DemoCi", { env, githubOidcProviderArn: oidc, repo: "KhubaibQaiser/demo-infra" });
+  new DemoCiStack(app, "DemoCi", { env, githubOidcProviderArn: oidc, repo: "KhubaibQaiser@6773396/demo-infra@1447293722" });
 }
