@@ -61,6 +61,21 @@ jobs:
             done)
           [ -z "$bad" ] || { echo "$bad"; echo "A platform name was taken: pick a unique one in sites.json."; exit 1; }
 
+      # 1b) A new Pages project builds nothing until the repo gets a push: start the first build when it has none.
+      - name: first pages build
+        run: |
+          api="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects"
+          auth="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          jq -r '.sites[] | .pages.project + " " + .pages.branch' sites.json | while read -r project branch; do
+            n=$(curl -fsS -H "$auth" "$api/$project/deployments?per_page=1" | jq '.result | length')
+            if [ "$n" = 0 ]; then
+              echo "$project has no deployments: starting one from $branch"
+              curl -fsS -X POST -H "$auth" -F "branch=$branch" "$api/$project/deployments" | jq '{success, id: .result.id}'
+            else
+              echo "$project already has a deployment"
+            fi
+          done
+
       # 2) DNS (AWS via OIDC, no stored keys).
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
