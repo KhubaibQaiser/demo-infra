@@ -37,7 +37,10 @@ resource "cloudflare_pages_project" "site" {
   }
 
   deployment_configs = {
+    # Cloudflare requires fail_open to match between production and preview.
+    preview = { fail_open = true }
     production = {
+      fail_open = true
       env_vars = {
         for k, v in merge(
           try(each.value.pages.env, {}),
