@@ -23,6 +23,7 @@
         "subdomain": "lumen-api",
         "renderService": "lumen-demo-api-kq",
         "healthPath": "/api/health/live",
+        "keepalivePath": "/api/health/ready",
         "keepalive": true,
         "repo": "KhubaibQaiser/stagworks-backend",
         "branch": "demo/render",

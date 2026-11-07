@@ -15,6 +15,8 @@ export interface Site {
     subdomain: string;
     renderService: string;
     healthPath: string;
+    /** Path the keep-alive Worker pings; defaults to healthPath. Point it at a DB-touching endpoint so the free DB is not idled off. */
+    keepalivePath?: string;
     keepalive?: boolean;
     repo: string; // "owner/name" of the Laravel repo Render builds
     branch: string;
@@ -76,6 +78,7 @@ export function validateSites(c: SitesConfig, strict = false): void {
       hosts.add(label);
     }
     if (s.backend && !s.backend.healthPath.startsWith("/")) throw new Error(`healthPath must start with "/" (${s.name})`);
+    if (s.backend?.keepalivePath && !s.backend.keepalivePath.startsWith("/")) throw new Error(`keepalivePath must start with "/" (${s.name})`);
     if (s.backend?.env?.APP_ENV === "production") throw new Error(`demo:set-password refuses APP_ENV=production (${s.name})`);
   }
 
@@ -89,5 +92,5 @@ export function validateSites(c: SitesConfig, strict = false): void {
 export function keepaliveTargets(c: SitesConfig): string[] {
   return c.sites
     .filter((s) => s.backend?.keepalive)
-    .map((s) => `https://${apiHost(c, s)}${s.backend!.healthPath}`);
+    .map((s) => `https://${apiHost(c, s)}${s.backend!.keepalivePath ?? s.backend!.healthPath}`);
 }
