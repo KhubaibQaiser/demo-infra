@@ -23,7 +23,7 @@ describe("buildWranglerConfig", () => {
   it("derives cron and targets from sites.json", () => {
     const { config } = buildWranglerConfig(loadSites());
     expect(config.triggers.crons).toEqual(["*/10 6-20 * * *"]);
-    expect(JSON.parse(config.vars.TARGETS)).toEqual(["https://lumen-api.khubaibqaiser.com/api/health/live"]);
+    expect(JSON.parse(config.vars.TARGETS)).toEqual(["https://lumen-api.khubaibqaiser.com/api/health/ready"]);
     expect(config.workers_dev).toBe(false);
   });
   it("rejects a bad interval", () => {

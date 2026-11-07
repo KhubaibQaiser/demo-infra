@@ -41,6 +41,7 @@ describe("validateSites", () => {
     c.sites.push({ name: "stray", subdomain: "stray", pages: { ...c.sites[0].pages, project: "stray" } });
     expect(() => validateSites(c)).not.toThrow();
     expect(keepaliveTargets(c)).toHaveLength(1);
+    expect(keepaliveTargets(c)[0]).toMatch(/\/api\/health\/ready$/);
   });
 });
 
