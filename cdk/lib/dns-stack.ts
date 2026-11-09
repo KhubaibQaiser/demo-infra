@@ -1,7 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import { Construct } from "constructs";
-import { apiHost, frontendHost, pagesTarget, renderTarget, validateSites, type SitesConfig } from "../../lib/sites.ts";
+import { apiHost, frontendHost, pagesTarget, recordHost, renderTarget, validateSites, type SitesConfig } from "../../lib/sites.ts";
 
 /** CNAMEs for every demo site. The zone is owned by portfolio-v2 and referenced by ID (no CFN export/import, cf. its ADR 0001). */
 export class DemoDnsStack extends cdk.Stack {
@@ -29,6 +29,15 @@ export class DemoDnsStack extends cdk.Stack {
           ttl: cdk.Duration.minutes(5),
         });
       }
+    }
+
+    for (const record of config.records ?? []) {
+      new route53.CnameRecord(this, `Record-${record.name}`, {
+        zone,
+        recordName: recordHost(config, record),
+        domainName: record.target,
+        ttl: cdk.Duration.minutes(5),
+      });
     }
 
     cdk.Tags.of(this).add("project", "demo-infra");
