@@ -48,6 +48,18 @@
       }
     }
   ],
+  "records": [
+    {
+      "name": "gymos",
+      "subdomain": "gymos",
+      "target": "cname.vercel-dns.com"
+    },
+    {
+      "name": "gymos-api",
+      "subdomain": "gymos-api",
+      "target": "cname.vercel-dns.com"
+    }
+  ],
   "keepalive": {
     "intervalMinutes": 10,
     "activeHoursUtc": "6-20"

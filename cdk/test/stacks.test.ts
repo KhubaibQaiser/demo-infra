@@ -12,15 +12,17 @@ const dns = (mutate?: (c: ReturnType<typeof loadSites>) => void) => {
 };
 
 describe("DemoDnsStack", () => {
-  it("creates frontend and api CNAMEs for a site with a backend", () => {
+  it("creates frontend and api CNAMEs for a site with a backend, plus the external records", () => {
     const t = dns();
-    t.resourceCountIs("AWS::Route53::RecordSet", 2);
+    t.resourceCountIs("AWS::Route53::RecordSet", 4);
+    t.hasResourceProperties("AWS::Route53::RecordSet", { Name: "gymos.khubaibqaiser.com.", Type: "CNAME", ResourceRecords: ["cname.vercel-dns.com"], TTL: "300" });
+    t.hasResourceProperties("AWS::Route53::RecordSet", { Name: "gymos-api.khubaibqaiser.com.", Type: "CNAME", ResourceRecords: ["cname.vercel-dns.com"], TTL: "300" });
     t.hasResourceProperties("AWS::Route53::RecordSet", { Name: "lumen.khubaibqaiser.com.", Type: "CNAME", ResourceRecords: ["lumen-demo-kq.pages.dev"], TTL: "300" });
     t.hasResourceProperties("AWS::Route53::RecordSet", { Name: "lumen-api.khubaibqaiser.com.", Type: "CNAME", ResourceRecords: ["lumen-demo-api-kq.onrender.com"] });
   });
   it("creates only one record for a static site", () => {
     const t = dns((c) => c.sites.push({ name: "stray", subdomain: "stray", pages: { ...c.sites[0].pages, project: "stray" } }));
-    t.resourceCountIs("AWS::Route53::RecordSet", 3);
+    t.resourceCountIs("AWS::Route53::RecordSet", 5);
   });
   it("throws on a duplicate subdomain", () => {
     expect(() => dns((c) => { c.sites[0].backend!.subdomain = "lumen"; })).toThrow(/duplicate/);

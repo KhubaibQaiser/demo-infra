@@ -25,10 +25,19 @@ export interface Site {
   };
 }
 
+/** A plain CNAME to a host managed elsewhere (e.g. a Vercel project), not a Pages/Render site. */
+export interface ExternalRecord {
+  name: string;
+  subdomain: string;
+  /** Hostname only, no scheme or path. */
+  target: string;
+}
+
 export interface SitesConfig {
   apex: string;
   zone: { id: string };
   sites: Site[];
+  records?: ExternalRecord[];
   keepalive: { intervalMinutes: number; activeHoursUtc: string };
 }
 
@@ -44,6 +53,7 @@ export function loadSites(path = new URL("../sites.json", import.meta.url)): Sit
 export const frontendHost = (c: SitesConfig, s: Site) => `${s.subdomain}.${c.apex}`;
 export const apiHost = (c: SitesConfig, s: Site) => `${s.backend!.subdomain}.${c.apex}`;
 export const pagesTarget = (s: Site) => `${s.pages.project}.pages.dev`;
+export const recordHost = (c: SitesConfig, r: ExternalRecord) => `${r.subdomain}.${c.apex}`;
 export const renderTarget = (s: Site) => `${s.backend!.renderService}.onrender.com`;
 
 /** Number of hours a day covered by "a-b" (inclusive), e.g. "6-20" -> 15. */
@@ -80,6 +90,18 @@ export function validateSites(c: SitesConfig, strict = false): void {
     if (s.backend && !s.backend.healthPath.startsWith("/")) throw new Error(`healthPath must start with "/" (${s.name})`);
     if (s.backend?.keepalivePath && !s.backend.keepalivePath.startsWith("/")) throw new Error(`keepalivePath must start with "/" (${s.name})`);
     if (s.backend?.env?.APP_ENV === "production") throw new Error(`demo:set-password refuses APP_ENV=production (${s.name})`);
+  }
+
+  const recordNames = new Set<string>();
+  for (const r of c.records ?? []) {
+    if (recordNames.has(r.name)) throw new Error(`duplicate record name "${r.name}"`);
+    recordNames.add(r.name);
+    if (!LABEL.test(r.subdomain) || RESERVED.has(r.subdomain)) throw new Error(`invalid or reserved subdomain "${r.subdomain}"`);
+    if (hosts.has(r.subdomain)) throw new Error(`duplicate subdomain "${r.subdomain}"`);
+    hosts.add(r.subdomain);
+    if (!/^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(r.target)) {
+      throw new Error(`record "${r.name}" target must be a bare hostname, got "${r.target}"`);
+    }
   }
 
   const targets = c.sites.filter((s) => s.backend?.keepalive).length;

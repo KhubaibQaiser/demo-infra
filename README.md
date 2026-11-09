@@ -24,6 +24,10 @@ tofu -chdir=tofu init -backend=false && tofu -chdir=tofu validate
 2. Open a PR and review the checks and plan.
 3. Merge. CI applies and runs the smoke test.
 
+## Add a CNAME for a host managed elsewhere (e.g. Vercel)
+Add `{ "name", "subdomain", "target" }` to `records` in `sites.json` (`target` is a bare hostname). It becomes a CNAME in the same
+`DemoDns` stack; nothing else is created. Attach the domain on the provider first, so its certificate can be issued once the record resolves.
+
 ## Teardown
 `aiven_mysql` has `prevent_destroy`. To remove a site: delete its entry, remove `prevent_destroy` in a separate PR first.
 

@@ -45,6 +45,33 @@ describe("validateSites", () => {
   });
 });
 
+describe("external records", () => {
+  it("accepts the committed gymos records", () => {
+    const c = base();
+    expect(c.records?.map((r) => r.subdomain)).toEqual(["gymos", "gymos-api"]);
+    expect(() => validateSites(c)).not.toThrow();
+  });
+  it("rejects a record that collides with a site subdomain", () => {
+    const c = base();
+    c.records = [{ name: "x", subdomain: c.sites[0].subdomain, target: "cname.vercel-dns.com" }];
+    expect(() => validateSites(c)).toThrow(/duplicate subdomain/);
+  });
+  it("rejects duplicate record names and subdomains", () => {
+    const c = base();
+    c.records = [{ name: "a", subdomain: "one", target: "cname.vercel-dns.com" }, { name: "a", subdomain: "two", target: "cname.vercel-dns.com" }];
+    expect(() => validateSites(c)).toThrow(/duplicate record name/);
+    c.records = [{ name: "a", subdomain: "one", target: "cname.vercel-dns.com" }, { name: "b", subdomain: "one", target: "cname.vercel-dns.com" }];
+    expect(() => validateSites(c)).toThrow(/duplicate subdomain/);
+  });
+  it("rejects reserved labels and non-hostname targets", () => {
+    const c = base();
+    c.records = [{ name: "a", subdomain: "www", target: "cname.vercel-dns.com" }];
+    expect(() => validateSites(c)).toThrow(/reserved/);
+    c.records = [{ name: "a", subdomain: "ok", target: "https://cname.vercel-dns.com/" }];
+    expect(() => validateSites(c)).toThrow(/bare hostname/);
+  });
+});
+
 describe("activeHoursPerDay", () => {
   it("counts inclusive hours", () => {
     expect(activeHoursPerDay("6-20")).toBe(15);
